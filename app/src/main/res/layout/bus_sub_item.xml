@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:stretchColumns="1"
+    android:layout_gravity="top">
+    <TableRow>
+        <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:stretchColumns="1"
+            android:layout_gravity="top">
+            <TableRow>
+                <TextView
+                    android:id="@+id/textBus"
+                    android:layout_height="wrap_content"
+                    android:layout_width="100dip"
+                    android:layout_gravity="left|center_vertical"
+                    android:textSize="20dip"
+                    android:layout_marginLeft="30dip" />
+                <TextView
+                    android:id="@+id/textTime"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_marginLeft="15dip"
+                    android:layout_gravity="center_vertical"
+                    android:background="#0b5c7a"
+                    android:textColor="#ffffff"
+                    android:textSize="20dip"
+                    android:text="" />
+            </TableRow>
+        </TableLayout>
+    </TableRow>
+</TableLayout>

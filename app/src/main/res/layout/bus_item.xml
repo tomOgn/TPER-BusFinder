@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:stretchColumns="1"
+    android:layout_gravity="top">
+    <TableRow>
+        <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:stretchColumns="1"
+            android:layout_gravity="top">
+            <TableRow>
+                <TextView
+                    android:id="@+id/textName"
+                    android:textColor="#000000"
+                    android:layout_height="wrap_content"
+                    android:layout_width="250dip"
+                    android:layout_weight="1"
+                    android:layout_gravity="left|center_vertical"
+                    android:textSize="20dip"
+                    android:layout_marginLeft="10dip"
+                    android:textStyle="bold"/>
+            </TableRow>
+            <TableRow >
+                <TextView
+                    android:id="@+id/textDistance"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:textColor="#000000"
+                    android:layout_weight="1"
+                    android:layout_gravity="left|center_vertical"
+                    android:textSize="15dip"
+                    android:layout_marginLeft="10dip"/>
+            </TableRow>
+        </TableLayout>
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_gravity="right|center_vertical"
+            android:src="@drawable/google_map"/>
+        <CheckBox android:id="@+id/checkbox"
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:focusable="false"
+            android:layout_alignParentRight="true"
+            android:freezesText="false"
+            android:layout_gravity="right|center_vertical"
+            style="?android:attr/starStyle"/>
+    </TableRow>
+</TableLayout>
