@@ -29,6 +29,7 @@ public class Update extends ActionBarActivity
     private TperDataSource _dataSource = null;
     private boolean _lines = false, _stops = false, _paths = false;
     private HashMap<String, Integer> _usage;
+    private Utility _utility = new Utility();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -36,11 +37,11 @@ public class Update extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.update_activity);
 
-        (findViewById(R.id.buttonDone)).setOnClickListener(new View.OnClickListener()
-        {
+        Button update = (Button)findViewById(R.id.buttonDone);
+        update.setText(R.string.label_wait);
+        update.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 if (_dataSource != null)
                     _dataSource.close();
                 Intent i = new Intent(getApplicationContext(), MainActivity.class);
@@ -85,20 +86,8 @@ public class Update extends ActionBarActivity
         {
             Button update = (Button)findViewById(R.id.buttonDone);
             update.setEnabled(true);
-            update.setText("Done!");
+            update.setText(R.string.label_done);
         }
-    }
-
-    private InputStream downloadUrl(String urlString) throws IOException
-    {
-        URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(20000);
-        conn.setConnectTimeout(30000);
-        conn.setRequestMethod("GET");
-        conn.setDoInput(true);
-        conn.connect();
-        return conn.getInputStream();
     }
 
     private class DownloadLines extends AsyncTask<Void, Integer, Void>
@@ -111,7 +100,7 @@ public class Update extends ActionBarActivity
         @Override
         protected void onPreExecute()
         {
-            _textView.setText("Downloading...");
+            _textView.setText(R.string.label_downloading);
         }
 
         @Override
@@ -120,7 +109,7 @@ public class Update extends ActionBarActivity
             InputStream stream;
             try
             {
-                stream = downloadUrl(URL_LINES);
+                stream = _utility.downloadUrl(URL_LINES);
                 try
                 {
                     DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -140,9 +129,9 @@ public class Update extends ActionBarActivity
                         publishProgress(i + 1);
                     }
                 }
-                catch (ParserConfigurationException | SAXException ignored)
+                catch (ParserConfigurationException | SAXException e)
                 {
-
+                    _utility.alertParsingError(getApplicationContext());
                 }
                 finally
                 {
@@ -150,9 +139,9 @@ public class Update extends ActionBarActivity
                         stream.close();
                 }
             }
-            catch (IOException ignored)
+            catch (IOException e)
             {
-
+                _utility.alertServerError(getApplicationContext());
             }
 
             return null;
@@ -185,7 +174,7 @@ public class Update extends ActionBarActivity
         @Override
         protected void onPreExecute()
         {
-            textView.setText("Downloading...");
+            textView.setText(R.string.label_downloading);
         }
 
         @Override
@@ -194,7 +183,7 @@ public class Update extends ActionBarActivity
             InputStream stream;
             try
             {
-                stream = downloadUrl(URL_STOPS);
+                stream = _utility.downloadUrl(URL_STOPS);
                 try
                 {
                     DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -221,14 +210,20 @@ public class Update extends ActionBarActivity
                         publishProgress(i + 1);
                     }
                 }
-                catch (ParserConfigurationException | SAXException ignored) {}
+                catch (ParserConfigurationException | SAXException e)
+                {
+                    _utility.alertParsingError(getApplicationContext());
+                }
                 finally
                 {
                     if (stream != null)
                         stream.close();
                 }
             }
-            catch (IOException ignored) {}
+            catch (IOException e)
+            {
+                _utility.alertServerError(getApplicationContext());
+            }
             return null;
         }
 
@@ -259,7 +254,7 @@ public class Update extends ActionBarActivity
         @Override
         protected void onPreExecute()
         {
-            textView.setText("Downloading...");
+            textView.setText(R.string.label_downloading);
         }
 
         @Override
@@ -268,7 +263,7 @@ public class Update extends ActionBarActivity
             InputStream stream;
             try
             {
-                stream = downloadUrl(URL_PATHS);
+                stream = _utility.downloadUrl(URL_PATHS);
                 try
                 {
                     DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -285,14 +280,20 @@ public class Update extends ActionBarActivity
                         publishProgress(i + 1);
                     }
                 }
-                catch (ParserConfigurationException | SAXException ignored) {}
+                catch (ParserConfigurationException | SAXException e)
+                {
+                    _utility.alertParsingError(getApplicationContext());
+                }
                 finally
                 {
                     if (stream != null)
                         stream.close();
                 }
             }
-            catch (IOException ignored) {}
+            catch (IOException e)
+            {
+                _utility.alertServerError(getApplicationContext());
+            }
             return null;
         }
 

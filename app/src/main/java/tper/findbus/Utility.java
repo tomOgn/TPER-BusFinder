@@ -27,10 +27,16 @@ public class Utility
     public void alertParsingError(Context context)
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage("There was an error in the parsing of the files. The data has not been downloaded correctly.");
+        builder.setMessage(R.string.message_parsing_error);
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
 
-
+    public void alertServerError(Context context)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage(R.string.message_server_error);
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
 }

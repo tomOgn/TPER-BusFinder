@@ -14,28 +14,29 @@
             android:layout_height="fill_parent"
             android:gravity="center"
             android:textStyle="bold"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:background="@drawable/list_selector"
-            android:text="Favorites"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white"
+            android:background="@drawable/button_selector_2"
+            android:text="@string/label_favorites"
             android:layout_margin="10dp"/>
     </LinearLayout>
     <LinearLayout
         android:orientation="horizontal"
         android:layout_gravity="center"
         android:layout_width="fill_parent"
-        android:layout_height="350dp">
+        android:layout_height="320dp">
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="160dp"
             android:layout_height="match_parent"
-            android:layout_gravity="left"
+            android:layout_gravity="start"
             android:gravity="center"
-            android:layout_marginRight="15dp">
+            android:layout_marginEnd="15dp">
             <GridView
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:id="@+id/gridViewLines"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 android:columnWidth="150dp"
                 android:layout_gravity="center"
                 android:gravity="center"
@@ -49,9 +50,9 @@
             android:orientation="vertical"
             android:layout_width="160dp"
             android:layout_height="match_parent"
-            android:layout_gravity="right"
+            android:layout_gravity="end"
             android:gravity="center"
-            android:layout_marginLeft="15dp">
+            android:layout_marginStart="15dp">
             <ListView
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
@@ -71,31 +72,64 @@
         android:layout_gravity="center"
         android:gravity="center|bottom">
         <Button
-            android:layout_marginRight="15dp"
+            android:layout_marginEnd="15dp"
             android:id="@+id/buttonUpdate"
             android:layout_width="150dp"
             android:layout_height="45dp"
             android:layout_gravity="center|bottom"
-            android:layout_weight="0"
             android:gravity="center"
             android:textStyle="bold"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/white"
             android:background="@drawable/button_selector_2"
-            android:text="Update" />
+            android:text="@string/label_update"
+            style="?android:attr/borderlessButtonStyle"/>
         <Button
-            android:layout_marginRight="15dp"
+            android:layout_marginEnd="15dp"
             android:id="@+id/buttonReset"
             android:layout_width="150dp"
             android:layout_height="45dp"
             android:layout_gravity="center|bottom"
-            android:layout_weight="0"
             android:gravity="center"
             android:textStyle="bold"
             android:textColor="@android:color/white"
             android:background="@drawable/button_selector_2"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Reset" />
+            android:text="@string/label_reset"
+            style="?android:attr/borderlessButtonStyle"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_gravity="center"
+        android:gravity="center|bottom">
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/radioGroupLanguage"
+            android:checkedButton="@+id/sound" >
+            <RadioButton
+                android:layout_width="40dip"
+                android:layout_height="40dip"
+                android:id="@+id/radioButtonEn"/>
+            <ImageView
+                android:layout_width="40dip"
+                android:layout_height="40dip"
+                android:layout_marginStart="5dp"
+                android:src="@drawable/flag_en"/>
+            <RadioButton
+                android:layout_width="40dip"
+                android:layout_height="40dip"
+                android:layout_marginStart="25dp"
+                android:id="@+id/radioButtonIt"/>
+            <ImageView
+                android:layout_width="40dip"
+                android:layout_height="40dip"
+                android:layout_marginStart="5dp"
+                android:src="@drawable/flag_it"/>
+        </RadioGroup>
+    </LinearLayout>
 </LinearLayout>

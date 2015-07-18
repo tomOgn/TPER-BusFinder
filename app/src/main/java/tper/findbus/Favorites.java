@@ -27,8 +27,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,10 +41,11 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class Favorites extends ListActivity
 {
-    private static ArrayList<StopLine> _favorites = null;
-    private TperDataSource _dataSource = null;
-    static StopLineAdapterItem adapter;
     private Location _phoneLocation;
+    private Utility _utility = new Utility();
+    private TperDataSource _dataSource = null;
+    private static ArrayList<StopLine> _favorites = null;
+    private static StopLineAdapterItem _adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -58,8 +57,8 @@ public class Favorites extends ListActivity
 
         retrieveStops(getApplicationContext());
 
-        adapter = new StopLineAdapterItem(this, R.layout.favorites_item, _favorites);
-        setListAdapter(adapter);
+        _adapter = new StopLineAdapterItem(this, R.layout.favorites_item, _favorites);
+        setListAdapter(_adapter);
 
         final Button update = (Button) findViewById(R.id.buttonUpdateAll);
         update.setOnClickListener(new View.OnClickListener() {
@@ -99,10 +98,8 @@ public class Favorites extends ListActivity
         _favorites = _dataSource.getFavoritePairs();
 
         // Order them alphabetically by bus line.
-        Collections.sort(_favorites, new Comparator<StopLine>()
-        {
-            public int compare(StopLine favorite1, StopLine favorite2)
-            {
+        Collections.sort(_favorites, new Comparator<StopLine>() {
+            public int compare(StopLine favorite1, StopLine favorite2) {
                 return favorite1.StopName.compareTo(favorite2.StopName);
             }
         });
@@ -110,9 +107,9 @@ public class Favorites extends ListActivity
 
     public class StopLineAdapterItem extends ArrayAdapter<StopLine>
     {
-        Context context;
-        int layoutId;
-        ArrayList<StopLine> data;
+        private Context context;
+        private int layoutId;
+        private ArrayList<StopLine> data;
 
         public StopLineAdapterItem(Context context, int layoutId, ArrayList<StopLine> data)
         {
@@ -193,18 +190,18 @@ public class Favorites extends ListActivity
     {
         final StopLine stopLine = _favorites.get(position);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure to delete this favorite?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener()
+        builder.setMessage(R.string.message_delete_favorite);
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface arg0, int arg1)
             {
                 _dataSource.deleteFavorite(stopLine.StopCode, stopLine.Line);
                 _favorites.remove(stopLine);
-                adapter.notifyDataSetChanged();
+                _adapter.notifyDataSetChanged();
             }
         });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener()
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface arg0, int arg1)
@@ -221,18 +218,6 @@ public class Favorites extends ListActivity
         Criteria criteria = new Criteria();
         String provider = _locationManager.getBestProvider(criteria, false);
         return _locationManager.getLastKnownLocation(provider);
-    }
-
-    private InputStream downloadUrl(String urlString) throws IOException
-    {
-        URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(20000);
-        conn.setConnectTimeout(30000);
-        conn.setRequestMethod("GET");
-        conn.setDoInput(true);
-        conn.connect();
-        return conn.getInputStream();
     }
 
     private class DownloadTimes extends AsyncTask<Void, Void, Void>
@@ -263,7 +248,7 @@ public class Favorites extends ListActivity
                         .build().toString();
                 try
                 {
-                    stream = downloadUrl(url);
+                    stream = _utility.downloadUrl(url);
                     try
                     {
                         DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -286,9 +271,15 @@ public class Favorites extends ListActivity
                             favorite.Time2 = matcher.group(2);
                         }
                     }
-                    catch (ParserConfigurationException | SAXException ignored) {}
+                    catch (ParserConfigurationException | SAXException e)
+                    {
+                        _utility.alertParsingError(getApplicationContext());
+                    }
                 }
-                catch (IOException ignored) {}
+                catch (IOException e)
+                {
+                    _utility.alertServerError(getApplicationContext());
+                }
             }
 
             return null;
@@ -298,7 +289,7 @@ public class Favorites extends ListActivity
         protected void onPostExecute(Void buses)
         {
             super.onPostExecute(buses);
-            adapter.notifyDataSetChanged();
+            _adapter.notifyDataSetChanged();
             (findViewById(R.id.buttonUpdateAll)).setEnabled(true);
         }
     }
@@ -333,7 +324,7 @@ public class Favorites extends ListActivity
                     .build().toString();
             try
             {
-                stream = downloadUrl(url);
+                stream = _utility.downloadUrl(url);
                 try
                 {
                     DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -356,9 +347,15 @@ public class Favorites extends ListActivity
                         favorite.Time2 = matcher.group(2);
                     }
                 }
-                catch (ParserConfigurationException | SAXException ignored) {}
+                catch (ParserConfigurationException | SAXException e)
+                {
+                    _utility.alertParsingError(getApplicationContext());
+                }
             }
-            catch (IOException ignored) {}
+            catch (IOException e)
+            {
+                _utility.alertServerError(getApplicationContext());
+            }
 
             return null;
         }
@@ -367,7 +364,7 @@ public class Favorites extends ListActivity
         protected void onPostExecute(Void buses)
         {
             super.onPostExecute(buses);
-            adapter.notifyDataSetChanged();
+            _adapter.notifyDataSetChanged();
             (findViewById(R.id.favoriteUpdate)).setEnabled(true);
         }
     }

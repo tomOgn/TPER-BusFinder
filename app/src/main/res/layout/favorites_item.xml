@@ -18,7 +18,7 @@
                 android:id="@+id/widgetName"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:textSize="20dip"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/darker_gray"/>
             <TextView
@@ -26,7 +26,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:textSize="14dip"
+                android:textSize="14sp"
                 android:textColor="@android:color/white"/>
         </LinearLayout>
         <LinearLayout
@@ -46,11 +46,11 @@
                         android:id="@+id/widgetBus1"
                         android:layout_height="wrap_content"
                         android:layout_width="70dp"
-                        android:layout_gravity="left|center_vertical"
+                        android:layout_gravity="start|center_vertical"
                         android:layout_weight="1"
-                        android:paddingLeft="5dp"
+                        android:paddingStart="5dp"
                         android:background="#ffffff"
-                        android:textSize="20dip"
+                        android:textSize="20sp"
                         android:textColor="#0b5c7a" />
                     <TextView
                         android:id="@+id/widgetTime1"
@@ -60,8 +60,8 @@
                         android:layout_weight="1"
                         android:background="#0b5c7a"
                         android:textColor="#ffffff"
-                        android:textSize="20dip"
-                        android:paddingLeft="5dp" />
+                        android:textSize="20sp"
+                        android:paddingStart="5dp" />
                 </LinearLayout>
                 <LinearLayout
                     android:orientation="horizontal"
@@ -72,12 +72,12 @@
                         android:id="@+id/widgetBus2"
                         android:layout_height="wrap_content"
                         android:layout_width="70dp"
-                        android:layout_gravity="left|center_vertical"
+                        android:layout_gravity="start|center_vertical"
                         android:layout_weight="1"
                         android:background="#ffffff"
                         android:textColor="#0b5c7a"
-                        android:textSize="20dip"
-                        android:paddingLeft="5dp" />
+                        android:textSize="20sp"
+                        android:paddingStart="5dp" />
                     <TextView
                         android:id="@+id/widgetTime2"
                         android:layout_height="wrap_content"
@@ -86,40 +86,40 @@
                         android:layout_weight="1"
                         android:background="#0b5c7a"
                         android:textColor="#ffffff"
-                        android:textSize="20dip"
-                        android:paddingLeft="5dp" />
+                        android:textSize="20sp"
+                        android:paddingStart="5dp" />
                 </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right|center_vertical"
-                android:layout_marginLeft="20dp"
-                android:gravity="right">
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginStart="20dp"
+                android:gravity="end">
                 <ImageView
                     android:id="@+id/favoriteMap"
                     android:background="@drawable/button_selector"
                     android:layout_width="40dip"
                     android:layout_height="40dip"
-                    android:layout_marginLeft="25dp"
-                    android:layout_gravity="right|center_vertical"
+                    android:layout_marginStart="25dp"
+                    android:layout_gravity="end|center_vertical"
                     android:src="@drawable/google_map"/>
                 <ImageView
                     android:id="@+id/favoriteUpdate"
                     android:background="@drawable/button_selector"
                     android:layout_width="40dip"
                     android:layout_height="40dip"
-                    android:layout_marginLeft="25dp"
-                    android:layout_gravity="right|center_vertical"
+                    android:layout_marginStart="25dp"
+                    android:layout_gravity="end|center_vertical"
                     android:src="@drawable/update"/>
                 <ImageView
                     android:id="@+id/favoriteRemove"
                     android:background="@drawable/button_selector"
                     android:layout_width="40dip"
                     android:layout_height="40dip"
-                    android:layout_marginLeft="25dp"
-                    android:layout_gravity="right|center_vertical"
+                    android:layout_marginStart="25dp"
+                    android:layout_gravity="end|center_vertical"
                     android:src="@drawable/remove"/>
             </LinearLayout>
         </LinearLayout>

@@ -24,7 +24,7 @@
         </activity>
         <activity
             android:name="tper.findbus.BusMap"
-            android:label="Map" >
+            android:label="@string/title_activity_map" >
         </activity>
         <activity
             android:name="tper.findbus.Update"

@@ -13,7 +13,7 @@
             android:layout_width="fill_parent"
             android:layout_height="50dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Update all"
+            android:text="@string/label_update_all"
             android:layout_gravity="center"
             android:gravity="center"
             android:textStyle="bold"

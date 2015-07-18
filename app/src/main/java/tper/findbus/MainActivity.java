@@ -1,11 +1,12 @@
 package tper.findbus;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.ConnectivityManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,106 +14,96 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends Activity
 {
     private TperDataSource _dataSource = null;
-    HashMap<String, Integer> _lines;
+    private HashMap<String, Integer> _lines;
+    private static Language _language = Language.English;
+
+    public enum Language
+    {
+        English, Italian
+    }
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
+	protected void onCreate(final Bundle savedInstanceState)
     {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_activity);
 
-        Button update = (Button) findViewById(R.id.buttonUpdate);
-        update.setOnClickListener(new View.OnClickListener()
-        {
+        (findViewById(R.id.buttonUpdate)).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 alertUpdate();
             }
         });
 
-        Button reset = (Button) findViewById(R.id.buttonReset);
-        reset.setOnClickListener(new View.OnClickListener()
-        {
+        (findViewById(R.id.buttonReset)).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 alertReset();
             }
         });
 
-        Button favorites = (Button) findViewById(R.id.buttonFavorites);
-        favorites.setOnClickListener(new View.OnClickListener()
-        {
+        (findViewById(R.id.buttonFavorites)).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 if (!isNetworkAvailable(getApplicationContext())) return;
                 startActivity(new Intent(getApplicationContext(), Favorites.class));
             }
         });
+
+        RadioButton english = (RadioButton) findViewById(R.id.radioButtonEn);
+        english.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (_language != Language.English)
+                {
+                    _language = Language.English;
+                    callSwitchLang("en");
+                }
+            }
+        });
+
+        RadioButton italian = (RadioButton) findViewById(R.id.radioButtonIt);
+        italian.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (_language != Language.Italian) {
+                    _language = Language.Italian;
+                    callSwitchLang("it");
+                }
+            }
+        });
+
+        String currentLanguage = Locale.getDefault().getLanguage();
+        if (currentLanguage.contentEquals("en"))
+        {
+            _language = Language.English;
+            english.setChecked(true);
+        }
+        else
+        {
+            _language = Language.Italian;
+            italian.setChecked(true);
+        }
 
         _dataSource = new TperDataSource(this);
         _dataSource.open();
         _lines = _dataSource.getLinesUsage();
         populateListViewLines();
         populateGridViewLines();
-    }
-
-    private void alertReset()
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure to delete all user data?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface arg0, int arg1) {
-                _dataSource.reset();
-                populateGridViewLines();
-            }
-        });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface arg0, int arg1)
-            {
-            }
-        });
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
-
-    private void alertUpdate()
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure to update all bus data? The process may take few minutes to complete.");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface arg0, int arg1)
-            {
-                if (!isNetworkAvailable(getApplicationContext())) return;
-                startActivity(new Intent(getApplicationContext(), Update.class));
-            }
-        });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface arg0, int arg1)
-            {
-            }
-        });
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
     }
 
     @Override
@@ -130,6 +121,68 @@ public class MainActivity extends ActionBarActivity
         if (_dataSource != null)
             _dataSource.close();
         super.onPause();
+    }
+
+    private void callSwitchLang(String langCode)
+    {
+        Locale locale = new Locale(langCode);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        getBaseContext().getResources().updateConfiguration(
+                config,
+                getBaseContext().getResources().getDisplayMetrics());
+
+        if (_dataSource != null)
+            _dataSource.close();
+
+        this.recreate();
+    }
+
+    private void alertReset()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.message_delete_all);
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                _dataSource.reset();
+                populateGridViewLines();
+            }
+        });
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1)
+            {
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void alertUpdate()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.message_update_database);
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1)
+            {
+                if (!isNetworkAvailable(getApplicationContext())) return;
+                startActivity(new Intent(getApplicationContext(), Update.class));
+            }
+        });
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1)
+            {
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     private void populateListViewLines()
@@ -185,7 +238,7 @@ public class MainActivity extends ActionBarActivity
                 connectivityManager.getActiveNetworkInfo() != null &&
                 connectivityManager.getActiveNetworkInfo().isConnected();
         if (!isConnected)
-            Toast.makeText(getApplicationContext(), "The device must be connected to Internet.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.message_no_internet, Toast.LENGTH_SHORT).show();
         return isConnected;
     }
 }

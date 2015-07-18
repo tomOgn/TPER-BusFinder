@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="message_delete_all">Sei sicuro di cancellare tutti i dati relativi all\'utente?</string>
+    <string name="yes">Sì</string>
+    <string name="no">No</string>
+    <string name="message_update_database">Sei sicuro di aggiornare il database? Il processo può richiedere alcuni minuti.</string>
+    <string name="message_no_internet">Il dispositivo deve essere connesso ad Internet.</string>
+    <string name="message_parsing_error">Si \è verificato un errore nell\'elaborazione dei file. I dati non sono stati scaricati correttamente.</string>
+    <string name="message_server_error">L\'interrogazione al server non ha avuto successo. I dati non sono stati scaricati correttamente.</string>
+    <string name="message_delete_favorite">Sei sicuro di rimuore questo preferito?</string>
+    <string name="label_done">Fatto!</string>
+    <string name="label_downloading">Scaricamento...</string>
+    <string name="label_favorites">Preferiti</string>
+    <string name="label_update">Aggiorna</string>
+    <string name="label_reset">Azzera</string>
+    <string name="title_activity_update">Aggiornamento</string>
+    <string name="title_activity_stops_list">Lista della fermate</string>
+    <string name="title_activity_favorites">Preferiti</string>
+    <string name="label_update_all">Aggiorna tutto</string>
+    <string name="label_lines">Linee:</string>
+    <string name="label_stops">Fermate:</string>
+    <string name="label_paths">Percorsi:</string>
+    <string name="label_wait">Attendi...</string>
+    <string name="title_activity_map">Mappa</string>
+</resources>

@@ -6,7 +6,7 @@
     android:layout_gravity="center"
     android:gravity="center"
     android:background="@drawable/list_item_selector"
-    android:textSize="30dip"
+    android:textSize="30sp"
     android:textStyle="bold"
     android:textAppearance="?android:attr/textAppearanceLarge"
     android:textColor="@android:color/holo_blue_dark" />

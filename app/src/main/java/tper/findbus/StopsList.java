@@ -51,6 +51,7 @@ public class StopsList extends ExpandableListActivity
     private StopsListAdapter _adapter = null;
     private Stop _selectedStop;
     private HashMap<Integer, Stop> _favorites;
+    private Utility _utility = new Utility();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -270,18 +271,6 @@ public class StopsList extends ExpandableListActivity
         }
     }
 
-    private InputStream downloadUrl(String urlString) throws IOException
-    {
-        URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(20000);
-        conn.setConnectTimeout(30000);
-        conn.setRequestMethod("GET");
-        conn.setDoInput(true);
-        conn.connect();
-        return conn.getInputStream();
-    }
-
     private class DownloadTimes extends AsyncTask<String, Integer, Void>
     {
         private final String URL_TIMES = "https://solweb.tper.it/tperit/webservices/hellobus.asmx/QueryHellobus";
@@ -302,7 +291,7 @@ public class StopsList extends ExpandableListActivity
                     .build().toString();
             try
             {
-                stream = downloadUrl(url);
+                stream = _utility.downloadUrl(url);
                 try
                 {
                     DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -320,9 +309,15 @@ public class StopsList extends ExpandableListActivity
                         _bus.add(bus);
                     }
                 }
-                catch (ParserConfigurationException | SAXException ignored) {}
+                catch (ParserConfigurationException | SAXException e)
+                {
+                    _utility.alertParsingError(getApplicationContext());
+                }
             }
-            catch (IOException ignored) {}
+            catch (IOException e)
+            {
+                _utility.alertServerError(getApplicationContext());
+            }
 
             return null;
         }

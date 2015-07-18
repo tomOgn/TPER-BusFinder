@@ -5,7 +5,7 @@
     android:background="@drawable/list_selector"
     android:gravity="center"
     android:minHeight="?android:attr/listPreferredItemHeight"
-    android:textSize="30dip"
+    android:textSize="30sp"
     android:textStyle="bold"
     android:textAppearance="?android:attr/textAppearanceLarge"
     android:layout_centerHorizontal="true"
