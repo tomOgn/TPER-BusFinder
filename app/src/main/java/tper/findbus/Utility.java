@@ -16,8 +16,8 @@ public class Utility
     {
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(20000);
-        conn.setConnectTimeout(30000);
+        conn.setReadTimeout(60000);
+        conn.setConnectTimeout(60000);
         conn.setRequestMethod("GET");
         conn.setDoInput(true);
         conn.connect();
