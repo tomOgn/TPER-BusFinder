@@ -1,9 +1,10 @@
 package tper.findbus;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -13,6 +14,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +28,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-public class Update extends ActionBarActivity
+public class Update extends Activity
 {
     private TperDataSource _dataSource = null;
     private boolean _lines = false, _stops = false, _paths = false;
@@ -247,14 +251,14 @@ public class Update extends ActionBarActivity
     private class DownloadPaths extends AsyncTask<Void, Integer, Void>
     {
         public final String URL_PATHS = "https://solweb.tper.it/tperit/webservices/opendata.asmx/OpenDataLineeFermate";
-        ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBarPaths);
-        TextView textView = (TextView) findViewById(R.id.textViewPaths);
-        int length;
+        private ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBarPaths);
+        private TextView textView = (TextView) findViewById(R.id.textViewPaths);
 
         @Override
         protected void onPreExecute()
         {
             textView.setText(R.string.label_downloading);
+            progressBar.setVisibility(ProgressBar.VISIBLE);
         }
 
         @Override
@@ -263,28 +267,57 @@ public class Update extends ActionBarActivity
             InputStream stream;
             try
             {
-                stream = _utility.downloadUrl(URL_PATHS);
+                URL url = new URL(URL_PATHS);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(120000);
+                conn.setConnectTimeout(120000);
+                conn.setRequestMethod("GET");
+                conn.setDoInput(true);
+                conn.connect();
+                stream = conn.getInputStream();
                 try
                 {
-                    DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                    Document doc = docBuilder.parse(stream);
-                    NodeList nodes = doc.getElementsByTagName("Table");
-                    length = nodes.getLength();
-                    progressBar.setMax(length);
-                    for (int i = 0; i < length; i++)
+                    XmlPullParserFactory xmlFactoryObject = XmlPullParserFactory.newInstance();
+                    XmlPullParser parser = xmlFactoryObject.newPullParser();
+                    parser.setInput(stream, null);
+                    String line = "", name, value = "0";
+                    int stop = 0, i = 0, event = parser.getEventType();
+                    while (event != XmlPullParser.END_DOCUMENT)
                     {
-                        Element element = (Element)nodes.item(i);
-                        String line = element.getElementsByTagName("codice_linea").item(0).getTextContent();
-                        int stop = Integer.parseInt(element.getElementsByTagName("codice_fermata").item(0).getTextContent());
-                        _dataSource.insertPath(line, stop);
-                        publishProgress(i + 1);
+                        name = parser.getName();
+                        switch (event)
+                        {
+                            case XmlPullParser.START_TAG:
+                                break;
+
+                            case XmlPullParser.TEXT:
+                                value = parser.getText();
+                                break;
+
+                            case XmlPullParser.END_TAG:
+                                if (name.equals("codice_linea"))
+                                {
+                                    line = value;
+                                }
+                                else if (name.equals("codice_fermata"))
+                                {
+                                    stop = Integer.parseInt(value);
+                                }
+                                else if (name.equals("Table"))
+                                {
+                                    _dataSource.insertPath(line, stop);
+                                    i++;
+                                }
+                                break;
+                        }
+                        publishProgress(i);
+                        event = parser.next();
                     }
                 }
-                catch (ParserConfigurationException | SAXException e)
+                catch (XmlPullParserException e)
                 {
-                    _utility.alertParsingError(getApplicationContext());
-                }
-                finally
+                    Log.e("DownloadPaths", e.getMessage());
+                } finally
                 {
                     if (stream != null)
                         stream.close();
@@ -301,14 +334,15 @@ public class Update extends ActionBarActivity
         protected void onProgressUpdate(Integer... values)
         {
             super.onProgressUpdate(values);
-            progressBar.setProgress(values[0]);
-            textView.setText("" + values[0] + "/" + length);
+            textView.setText("" + values[0]);
         }
 
         @Override
         protected void onPostExecute(Void result)
         {
             super.onPostExecute(result);
+            progressBar.setVisibility(ProgressBar.INVISIBLE);
+            textView.setText(textView.getText() + "/" + textView.getText());
             _paths = true;
             updateButton();
         }

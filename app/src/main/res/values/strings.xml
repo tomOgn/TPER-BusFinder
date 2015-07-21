@@ -25,4 +25,6 @@
     <string name="label_wait">Wait...</string>
     <string name="title_activity_map">Map</string>
     <string name="label_progress_bar_start" translatable="false">-/-</string>
+    <string name="message_no_gps">The GPS receiver seems to be disabled, do you want to enable it?</string>
+    <string name="label_back">Back</string>
 </resources>

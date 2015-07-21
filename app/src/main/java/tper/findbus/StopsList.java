@@ -4,8 +4,8 @@ import android.app.ExpandableListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -17,6 +17,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,8 +28,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,10 +41,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-public class StopsList extends ExpandableListActivity
+public class StopsList extends ExpandableListActivity implements LocationListener
 {
     private TperDataSource _dataSource = null;
-    private Location _here;
+    private LocationManager _locationManager;
+    private Location _phoneLocation;
     private ArrayList<Stop> _stops;
     private String _line;
     private StopsListAdapter _adapter = null;
@@ -57,6 +57,7 @@ public class StopsList extends ExpandableListActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.stops_activity);
 
         Drawable divider = this.getResources().getDrawable(R.drawable.line);
         getExpandableListView().setGroupIndicator(null);
@@ -64,6 +65,14 @@ public class StopsList extends ExpandableListActivity
         getExpandableListView().setChildDivider(divider);
         getExpandableListView().setDividerHeight(5);
         registerForContextMenu(getExpandableListView());
+
+        (findViewById(R.id.buttonBack)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            }
+        });
 
         // Open the connection with the database.
         _dataSource = new TperDataSource(this);
@@ -74,10 +83,9 @@ public class StopsList extends ExpandableListActivity
         _line = i.getStringExtra("line");
 
         // Get the actual phone location.
-        LocationManager _locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        String provider = _locationManager.getBestProvider(criteria, false);
-        _here = _locationManager.getLastKnownLocation(provider);
+        _locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 30000, 5, this);
+        _phoneLocation = getPhoneLocation();
 
         // Get the favorite stop-line pairs.
         _favorites = _dataSource.getFavoritePairsHashMap();
@@ -85,6 +93,36 @@ public class StopsList extends ExpandableListActivity
         // Populate list with the stops ordered by distance.
         final ArrayList<Stop> stops = getStops(_line);
         populateList(stops);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        _phoneLocation = location;
+        updateDistance();
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+    }
+
+    private Location getPhoneLocation()
+    {
+        Location locationGps = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Location locationNet = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+        long timeGps = 0, timeNet = 0;
+        if (locationGps != null) timeGps = locationGps.getTime();
+        if (locationNet != null) timeNet = locationNet.getTime();
+
+        return (timeGps - timeNet > 0)? locationGps : locationNet;
     }
 
     private void populateList(final ArrayList<Stop> stops)
@@ -121,7 +159,11 @@ public class StopsList extends ExpandableListActivity
             convertView = inflater.inflate(R.layout.bus_item, parentView, false);
 
             ((TextView) convertView.findViewById(R.id.textName)).setText(stop.Denomination);
-            ((TextView) convertView.findViewById(R.id.textDistance)).setText(stop.Distance + "m");
+
+            if (stop.Distance < 0)
+                ((TextView) convertView.findViewById(R.id.textDistance)).setText("-");
+            else
+                ((TextView) convertView.findViewById(R.id.textDistance)).setText(stop.Distance + "m");
 
             ImageView imageView = (ImageView) convertView.findViewById(R.id.image);
             imageView.setOnClickListener(new View.OnClickListener() {
@@ -184,7 +226,7 @@ public class StopsList extends ExpandableListActivity
             String now = dateFormat.format(calendar.getTime());
 
             // Get the incoming bus.
-            if (_selectedStop.Incoming.get(0).Code == "")
+            if (_selectedStop.Incoming.get(0).Code.contentEquals(""))
                 new DownloadTimes().execute("" + _selectedStop.Code, _line, now);
 
             return 2;
@@ -343,6 +385,29 @@ public class StopsList extends ExpandableListActivity
         }
     }
 
+    private void updateDistance()
+    {
+        // For each stop compute the distance in meters from the phone location.
+        for (Stop stop : _stops)
+        {
+            Location stopLocation = new Location("");
+            stopLocation.setLatitude(stop.Latitude);
+            stopLocation.setLongitude(stop.Longitude);
+            stop.Distance = (int) _phoneLocation.distanceTo(stopLocation);
+        }
+
+        // Order the stops by distance from the phone location.
+        Collections.sort(_stops, new Comparator<Stop>()
+        {
+            public int compare(Stop stop1, Stop stop2)
+            {
+                return stop1.Distance - stop2.Distance;
+            }
+        });
+
+        ((StopsListAdapter)getExpandableListAdapter()).notifyDataSetChanged();
+    }
+
     private ArrayList<Stop> getStops(String line)
     {
         ArrayList<Stop> stops;
@@ -356,14 +421,15 @@ public class StopsList extends ExpandableListActivity
             Location stopLocation = new Location("");
             stopLocation.setLatitude(stop.Latitude);
             stopLocation.setLongitude(stop.Longitude);
-            stop.Distance = (int)_here.distanceTo(stopLocation);
+            if (_phoneLocation != null)
+                stop.Distance = (int) _phoneLocation.distanceTo(stopLocation);
+            else
+                stop.Distance = -1;
         }
 
         // Order the stops by distance from the phone location.
-        Collections.sort(stops, new Comparator<Stop>()
-        {
-            public int compare(Stop stop1, Stop stop2)
-            {
+        Collections.sort(stops, new Comparator<Stop>() {
+            public int compare(Stop stop1, Stop stop2) {
                 return stop1.Distance - stop2.Distance;
             }
         });
@@ -383,5 +449,13 @@ public class StopsList extends ExpandableListActivity
         super.onPause();
         if (_dataSource != null)
             _dataSource.close();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        if (_dataSource != null)
+            _dataSource.close();
+        super.onDestroy();
     }
 }

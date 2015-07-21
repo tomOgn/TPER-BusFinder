@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/TPER Bus Finder.iml" filepath="$PROJECT_DIR$/TPER Bus Finder.iml" />
+      <module fileurl="file://$PROJECT_DIR$/TPER-BusFinder.iml" filepath="$PROJECT_DIR$/TPER-BusFinder.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

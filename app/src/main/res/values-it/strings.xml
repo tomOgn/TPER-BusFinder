@@ -22,4 +22,6 @@
     <string name="label_paths">Percorsi:</string>
     <string name="label_wait">Attendi...</string>
     <string name="title_activity_map">Mappa</string>
+    <string name="message_no_gps">Il ricevitore GPS sembra essere disabilitato, vuoi abilitarlo?</string>
+    <string name="label_back">Indietro</string>
 </resources>

@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -39,8 +40,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-public class Favorites extends ListActivity
+public class Favorites extends ListActivity implements LocationListener
 {
+    private LocationManager _locationManager;
     private Location _phoneLocation;
     private Utility _utility = new Utility();
     private TperDataSource _dataSource = null;
@@ -53,6 +55,9 @@ public class Favorites extends ListActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.favorites_activity);
 
+        // Get the actual phone location.
+        _locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 30000, 5, this);
         _phoneLocation = getPhoneLocation();
 
         retrieveStops(getApplicationContext());
@@ -69,6 +74,16 @@ public class Favorites extends ListActivity
                 new DownloadTimes().execute();
             }
         });
+
+        (findViewById(R.id.buttonBack)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (_dataSource != null)
+                    _dataSource.close();
+                finish();
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            }
+        });
     }
 
     @Override
@@ -76,7 +91,6 @@ public class Favorites extends ListActivity
     {
         if (_dataSource != null)
             _dataSource.open();
-
         super.onResume();
     }
 
@@ -86,6 +100,33 @@ public class Favorites extends ListActivity
         if (_dataSource != null)
             _dataSource.close();
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        if (_dataSource != null)
+            _dataSource.close();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onLocationChanged(Location location)
+    {
+        _phoneLocation = location;
+        _adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
     }
 
     private void retrieveStops(Context context)
@@ -133,10 +174,15 @@ public class Favorites extends ListActivity
             Location stopLocation = new Location("");
             stopLocation.setLatitude(favorite.Latitude);
             stopLocation.setLongitude(favorite.Longitude);
-            favorite.Distance = (int)_phoneLocation.distanceTo(stopLocation);
+            if (_phoneLocation != null)
+            {
+                favorite.Distance = (int) _phoneLocation.distanceTo(stopLocation);
+                ((TextView) view.findViewById(R.id.widgetDistance)).setText(favorite.Distance + "m");
+            }
+            else
+                ((TextView) view.findViewById(R.id.widgetDistance)).setText("-");
 
             ((TextView) view.findViewById(R.id.widgetName)).setText(favorite.StopName);
-            ((TextView) view.findViewById(R.id.widgetDistance)).setText(favorite.Distance + "m");
             ((TextView) view.findViewById(R.id.widgetBus1)).setText(favorite.Bus1);
             ((TextView) view.findViewById(R.id.widgetTime1)).setText(favorite.Time1);
             ((TextView) view.findViewById(R.id.widgetBus2)).setText(favorite.Bus2);
@@ -156,6 +202,7 @@ public class Favorites extends ListActivity
             });
 
             final ImageView update = (ImageView) view.findViewById(R.id.favoriteUpdate);
+            update.setEnabled(true);
             update.setOnClickListener(new View.OnClickListener()
             {
                 @Override
@@ -212,12 +259,16 @@ public class Favorites extends ListActivity
         alertDialog.show();
     }
 
-    public Location getPhoneLocation()
+    private Location getPhoneLocation()
     {
-        LocationManager _locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        String provider = _locationManager.getBestProvider(criteria, false);
-        return _locationManager.getLastKnownLocation(provider);
+        Location locationGps = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Location locationNet = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+        long timeGps = 0, timeNet = 0;
+        if (locationGps != null) timeGps = locationGps.getTime();
+        if (locationNet != null) timeNet = locationNet.getTime();
+
+        return (timeGps - timeNet > 0)? locationGps : locationNet;
     }
 
     private class DownloadTimes extends AsyncTask<Void, Void, Void>
@@ -365,7 +416,6 @@ public class Favorites extends ListActivity
         {
             super.onPostExecute(buses);
             _adapter.notifyDataSetChanged();
-            (findViewById(R.id.favoriteUpdate)).setEnabled(true);
         }
     }
 }

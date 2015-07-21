@@ -6,21 +6,19 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.RadioButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends Activity
@@ -28,6 +26,8 @@ public class MainActivity extends Activity
     private TperDataSource _dataSource = null;
     private HashMap<String, Integer> _lines;
     private static Language _language = Language.English;
+    private ArrayList<String> _favoriteLines;
+    private ArrayList<String> _allLines;
 
     public enum Language
     {
@@ -57,7 +57,7 @@ public class MainActivity extends Activity
         (findViewById(R.id.buttonFavorites)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!isNetworkAvailable(getApplicationContext())) return;
+                if (!isNetworkAvailable(getApplicationContext()) || !isGpsEnabled()) return;
                 startActivity(new Intent(getApplicationContext(), Favorites.class));
             }
         });
@@ -123,6 +123,14 @@ public class MainActivity extends Activity
         super.onPause();
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        if (_dataSource != null)
+            _dataSource.close();
+        super.onDestroy();
+    }
+
     private void callSwitchLang(String langCode)
     {
         Locale locale = new Locale(langCode);
@@ -150,11 +158,9 @@ public class MainActivity extends Activity
                 populateGridViewLines();
             }
         });
-        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener()
-        {
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface arg0, int arg1)
-            {
+            public void onClick(DialogInterface arg0, int arg1) {
             }
         });
         AlertDialog alertDialog = builder.create();
@@ -171,14 +177,15 @@ public class MainActivity extends Activity
             public void onClick(DialogInterface arg0, int arg1)
             {
                 if (!isNetworkAvailable(getApplicationContext())) return;
-                startActivity(new Intent(getApplicationContext(), Update.class));
+                Intent intent = new Intent(getApplicationContext(), Update.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                finish();
+                startActivity(intent);
             }
         });
-        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener()
-        {
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface arg0, int arg1)
-            {
+            public void onClick(DialogInterface arg0, int arg1) {
             }
         });
         AlertDialog alertDialog = builder.create();
@@ -187,40 +194,36 @@ public class MainActivity extends Activity
 
     private void populateListViewLines()
     {
-        List<String> lines = _dataSource.getLines();
+        _allLines = _dataSource.getLines();
         final ListView listview = (ListView) findViewById(R.id.listViewLines);
-        final ArrayAdapter adapter = new ArrayAdapter(this, R.layout.main_list_item, lines);
+        final ArrayAdapter adapter = new ArrayAdapter(this, R.layout.main_list_item, _allLines);
         listview.setAdapter(adapter);
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int position, long id)
-            {
-                startBusActivity(view);
+            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+                startBusActivity(_allLines.get(position));
             }
         });
     }
 
     private void populateGridViewLines()
     {
-        ArrayList<String> favoriteLines = _dataSource.getFavoriteLines();
+        _favoriteLines = _dataSource.getFavoriteLines();
         GridView gridView = (GridView) findViewById(R.id.gridViewLines);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.main_grid_item, favoriteLines);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.main_grid_item, _favoriteLines);
 
         gridView.setAdapter(adapter);
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-                startBusActivity(view);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                startBusActivity(_favoriteLines.get(position));
             }
         });
     }
 
-    private void startBusActivity(View view)
+    private void startBusActivity(String line)
     {
-        if (!isNetworkAvailable(getApplicationContext())) return;
+        if (!isNetworkAvailable(getApplicationContext()) || !isGpsEnabled()) return;
 
-        String line = String.valueOf(((TextView) view).getText());
         int usage = _lines.get(line) + 1;
         _dataSource.incrementLineUsage(line, usage);
         _lines.put(line, usage);
@@ -228,6 +231,7 @@ public class MainActivity extends Activity
         Intent i = new Intent(getApplicationContext(), StopsList.class);
         i.putExtra("line", line);
         startActivity(i);
+        finish();
     }
 
     public boolean isNetworkAvailable(final Context context)
@@ -240,5 +244,37 @@ public class MainActivity extends Activity
         if (!isConnected)
             Toast.makeText(getApplicationContext(), R.string.message_no_internet, Toast.LENGTH_SHORT).show();
         return isConnected;
+    }
+
+    private boolean isGpsEnabled()
+    {
+        boolean answer;
+        final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        answer = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (!answer)
+        {
+            alertGps();
+        }
+        return answer;
+    }
+
+    private void alertGps()
+    {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.message_no_gps)
+                .setCancelable(false)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, final int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
     }
 }
