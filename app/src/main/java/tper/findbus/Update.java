@@ -295,18 +295,17 @@ public class Update extends Activity
                                 break;
 
                             case XmlPullParser.END_TAG:
-                                if (name.equals("codice_linea"))
-                                {
-                                    line = value;
-                                }
-                                else if (name.equals("codice_fermata"))
-                                {
-                                    stop = Integer.parseInt(value);
-                                }
-                                else if (name.equals("Table"))
-                                {
-                                    _dataSource.insertPath(line, stop);
-                                    i++;
+                                switch (name) {
+                                    case "codice_linea":
+                                        line = value;
+                                        break;
+                                    case "codice_fermata":
+                                        stop = Integer.parseInt(value);
+                                        break;
+                                    case "Table":
+                                        _dataSource.insertPath(line, stop);
+                                        i++;
+                                        break;
                                 }
                                 break;
                         }

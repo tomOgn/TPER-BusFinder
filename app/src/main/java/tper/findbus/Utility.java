@@ -2,8 +2,6 @@ package tper.findbus;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 
 import java.io.IOException;
 import java.io.InputStream;

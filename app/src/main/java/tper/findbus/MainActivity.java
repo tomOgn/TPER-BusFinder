@@ -196,7 +196,7 @@ public class MainActivity extends Activity
     {
         _allLines = _dataSource.getLines();
         final ListView listview = (ListView) findViewById(R.id.listViewLines);
-        final ArrayAdapter adapter = new ArrayAdapter(this, R.layout.main_list_item, _allLines);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.main_list_item, _allLines);
         listview.setAdapter(adapter);
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

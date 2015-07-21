@@ -10,6 +10,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +18,6 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -59,7 +59,7 @@ public class StopsList extends ExpandableListActivity implements LocationListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.stops_activity);
 
-        Drawable divider = this.getResources().getDrawable(R.drawable.line);
+        Drawable divider = ContextCompat.getDrawable(getApplicationContext(), R.drawable.line);
         getExpandableListView().setGroupIndicator(null);
         getExpandableListView().setDivider(divider);
         getExpandableListView().setChildDivider(divider);
